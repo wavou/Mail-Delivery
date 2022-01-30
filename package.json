@@ -1,0 +1,35 @@
+{
+  "name": "mail-delivery",
+  "version": "1.0.0",
+  "description": "mail delivery picus challenge",
+  "author": "Yavuz Baykut Kaya",
+  "dependencies": {
+    "@types/react-text-mask": "^5.4.10",
+    "axios": "^0.21.1",
+    "classnames": "^2.3.1",
+    "net": "^1.0.2",
+    "primeflex": "^2.0.0",
+    "primeicons": "^4.1.0",
+    "primereact": "^6.2.1",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-text-mask": "^5.4.3",
+    "react-transition-group": "^4.4.1"
+  },
+  "scripts": {
+    "watch": "webpack --watch -d --output ./target/classes/static/built/bundle.js"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.6.4",
+    "@babel/plugin-proposal-class-properties": "^7.13.0",
+    "@babel/preset-env": "^7.6.3",
+    "@babel/preset-react": "^7.6.3",
+    "babel-loader": "^8.0.6",
+    "css-loader": "^5.2.0",
+    "file-loader": "^6.2.0",
+    "style-loader": "^2.0.0",
+    "url-loader": "^4.1.1",
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.9"
+  }
+}
