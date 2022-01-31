@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +18,9 @@ public class ContactService {
     private final ContactRepository repository;
 
     public ContactDTO createContact(ContactDTO contactDTO) {
+        String verificationCode = UUID.randomUUID().toString();
         Contact contact = mapper.toEntity(contactDTO);
+        contact.setVerificationCode(verificationCode);
         return mapper.toDTO(repository.save(contact));
     }
 

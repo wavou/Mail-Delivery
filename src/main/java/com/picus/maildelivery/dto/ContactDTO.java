@@ -7,6 +7,8 @@ public class ContactDTO {
     private String email;
     private String name;
 //    private Campaign campaign;
-    private boolean isClickedLink;
-    private long durationOfClick;
+
+    private Boolean isEmailSent;
+    private Boolean isClickedLink;
+    private Long durationOfClick;
 }

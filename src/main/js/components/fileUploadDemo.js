@@ -6,7 +6,9 @@ import { Tooltip } from 'primereact/tooltip';
 import axios from "axios";
 import {DataTable} from "primereact/datatable";
 import {Column} from "primereact/column";
-import {CREATE_CONTACT_URL, GET_ALL_CONTACTS_URL, RESPONSE_OK} from "../constants/constants";
+import {CREATE_CONTACT_URL, GET_ALL_CONTACTS_URL, RESPONSE_OK, SEND_EMAIL_URL} from "../constants/constants";
+import {InputTextarea} from "primereact/inputtextarea";
+import {Button} from "primereact/button";
 
 
 export const FileUploadDemo = () => {
@@ -14,7 +16,8 @@ export const FileUploadDemo = () => {
     const toast = useRef(null);
 
     const [contacts, setContacts] = useState([]);
-    const [selectedItem, setSelectedItem] = useState(null);
+    const [selectedContacts, setSelectedContacts] = useState(null);
+    const [mailBody, setMailBody] = useState('');
 
     useEffect(() => {
         getAllContacts();
@@ -25,7 +28,8 @@ export const FileUploadDemo = () => {
         toast.current.show({severity: 'info', summary: 'Success', detail: 'File Uploaded'});
     }
 
-    const invoiceUploadHandler = ({files}) => {
+    const uploadHandler = ({files}) => {
+        const [file] = files;
         const fileReader = new FileReader();
 
        fileReader.onload = (e) => {
@@ -36,11 +40,17 @@ export const FileUploadDemo = () => {
                const name = line.substr(0, line.indexOf('<') - 2);
                let email = line.split('<')[1];
                email = email.substr(0, email.indexOf('>'));
-               const entry = {name: name, email: email};
-               addOrUpdateEntry(entry);
+               const contact = {
+                   name: name,
+                   email: email,
+                   inCampaign: false,
+                   isEmailSent: false,
+                   linkClicked: false,
+                   durationUntilClick: 0};
+               addOrUpdateEntry(contact);
            });
         }
-        fileReader.readAsText(files);
+        fileReader.readAsText(file);
 
     };
 
@@ -97,28 +107,70 @@ export const FileUploadDemo = () => {
         );
     };*/
 
+    const sendEmailRequest = (mailString) => {
+        axios.post(SEND_EMAIL_URL, mailString).then(res => {
+            console.log(res);
+        })
+    }
+
+    const  onSendEmail = () => {
+        //TODO: toastr
+        if(selectedContacts && (mailBody !== '')){
+            const contactEmails = [];
+            selectedContacts.forEach(contact => {
+                //FIXME: maybe better way to write this logic
+                if(!contact.isEmailSent)
+                   contactEmails.push(contact.email);
+            });
+
+            if(contactEmails.length){
+                const mailToContacts = {
+                    mailBody: mailBody,
+                    contactEmails: contactEmails
+                }
+                sendEmailRequest(mailToContacts);
+            }
+
+        }
+
+    }
+
+
     return (
         <div>
             <Toast ref={toast}></Toast>
 
             <DataTable className="p-datatable-sm" scrollable
                        value={contacts}
-                       selection={selectedItem}
                        editMode="row"
                        dataKey="email"
+                       selection={selectedContacts}
+                       onSelectionChange={e => setSelectedContacts(e.value)}
+                       selectionMode={"multiple"}
+                       onSe
             >
+                <Column selectionMode="multiple" headerStyle={{ width: '3em' }} ></Column>
                 <Column field="name" header="Name"/>
                 <Column field="email" header="E Mail"/>
+                <Column field="isEmailSent" header="E Mail Sent"/>
+                <Column field="campaign" header="In Campaign"/>
+                <Column field="linkClicked" header="Link Has Clicked"/>
+                <Column field="duration" header="Duration Link Click"/>
 
             </DataTable>
+
+            <h5>E Mail </h5>
+            <InputTextarea value={mailBody} onChange={(e) => setMailBody(e.target.value)} rows={10} cols={60} />
+            <Button label="Submit" icon="pi pi-check"  onClick={ onSendEmail}/>
 
             <Tooltip target=".custom-choose-btn" content="Choose" position="bottom" />
             <Tooltip target=".custom-upload-btn" content="Upload" position="bottom" />
             <Tooltip target=".custom-cancel-btn" content="Clear" position="bottom" />
 
             <div className="card">
-                <h5>Advanced</h5>
-                <FileUpload name="demo[]" customUpload= {true}  onUpload={onUpload} uploadHandler={invoiceUploadHandler} multiple accept="image/*" maxFileSize={1000000}
+                <h5>Upload Contacts File</h5>
+                <FileUpload name="demo[]" customUpload= {true}  onUpload={onUpload} uploadHandler={uploadHandler}
+                            multiple={false} accept="image/*" maxFileSize={1000000}
                             emptyTemplate={<p className="m-0">Drag and drop files to here to upload.</p>}  />
 
             </div>
