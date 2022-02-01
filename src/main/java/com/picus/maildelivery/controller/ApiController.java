@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 
 import javax.mail.MessagingException;
+import javax.persistence.EntityNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
@@ -57,7 +58,10 @@ public class ApiController {
         log.info("send-email : {}", emailsToSend);
         try {
             mailService.sendEmails(emailsToSend);
-        } catch (MessagingException | UnsupportedEncodingException | MailAuthenticationException e) {
+        } catch (MessagingException |
+                UnsupportedEncodingException |
+                MailAuthenticationException |
+                EntityNotFoundException e) {
            return ResponseEntity.badRequest().body("Mail could not send");
         }
         return ResponseEntity.ok("ok");

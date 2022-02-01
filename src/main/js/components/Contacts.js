@@ -44,7 +44,6 @@ export const Contacts = () => {
     }, []);
 
     const onUpload = (e) => {
-        console.log("e: ", e);
         toast.current.show({severity: 'info', summary: 'Success', detail: 'File Uploaded'});
     }
 
@@ -93,14 +92,12 @@ export const Contacts = () => {
 
     const sendCreateContactsRequest = (contacts) => {
         axios.post(CREATE_CONTACTS_URL, contacts).then(res => {
-            console.log(res.data);
             setContacts(res.data);
         });
     }
 
     const sendCreateContactRequest = (contact) => {
         axios.post(CREATE_CONTACT_URL, contact).then(res => {
-            console.log(res);
             setContacts(contacts => [...contacts, res.data]);
         });
     }
@@ -108,7 +105,6 @@ export const Contacts = () => {
 
     const sendUpdateContactRequest = (contact) => {
         axios.put(UPDATE_CONTACT_URL, contact).then(res => {
-            console.log(res);
             const index = contacts.findIndex(contact => contact.id === res.data.id);
             const tempArray = [...contacts];
             tempArray[index] = res.data;
@@ -119,9 +115,7 @@ export const Contacts = () => {
     const sendEmailRequest = (mailString) => {
         axios.post(SEND_EMAIL_URL, mailString).then(res => {
             toast.current.show({severity: 'success', summary: 'Success Message', detail: res.data});
-            console.log(res);
         }).catch(res => {
-            console.log(res.response.data);
             toast.current.show({severity: 'error', summary: 'Error Message', detail: res.response.data});
         })
     }

@@ -14,6 +14,7 @@ import org.springframework.test.context.ContextConfiguration;
 import javax.mail.MessagingException;
 import javax.persistence.EntityNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 import java.util.Optional;
 
 import static com.picus.maildelivery.util.ContactAndMailEntityFactory.*;
@@ -66,8 +67,8 @@ class MailServiceTest {
 
     @Test
     void sendEmails_itShouldThrowNullPointerExceptionWhenMailInfoNotProvided() {
-        Contact contact = createContact();
-        when(repository.findContactByEmail(Mockito.any())).thenReturn(Optional.of(contact));
+        List<Contact> contactList = createContactList();
+        when(repository.findContactByEmail(Mockito.any())).thenReturn(Optional.of(contactList));
         assertThrows(NullPointerException.class, ()-> mailService.sendEmails(createMailDTO()));
     }
 

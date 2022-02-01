@@ -15,6 +15,8 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -51,8 +53,8 @@ public class MailService {
 
     public void sendEmails(MailDTO mailDTO) throws MessagingException, UnsupportedEncodingException {
         for(String email: mailDTO.getContactEmails()){
-            Contact contact = contactRepository.findContactByEmail(email).orElseThrow(EntityNotFoundException::new);
-            sendEmail(mailDTO.getMailBody(), contact);
+          List<Contact> contact = contactRepository.findContactByEmail(email).orElseThrow(EntityNotFoundException::new);
+          sendEmail(mailDTO.getMailBody(), contact.get(0));
         }
     }
 
