@@ -5,7 +5,7 @@ import {InputText} from "primereact/inputtext";
 import {Dialog} from "primereact/dialog";
 import {Toast} from "primereact/toast";
 
-const CreateContact = (props) => {
+const CreateOrUpdateContact = (props) => {
 
     const toast = useRef(null);
 
@@ -91,4 +91,4 @@ const CreateContact = (props) => {
     );
 }
 
-export  default CreateContact;
+export  default CreateOrUpdateContact;

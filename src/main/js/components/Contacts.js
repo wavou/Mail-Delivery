@@ -18,7 +18,7 @@ import {
 import {InputTextarea} from "primereact/inputtextarea";
 import {Button} from "primereact/button";
 import { classNames } from 'primereact/utils';
-import CreateContact from "./CreateContact";
+import CreateOrUpdateContact from "./CreateOrUpdateContact";
 import {Toolbar} from "primereact/toolbar";
 import {convertSecondsToTime} from "../utils/DateConversionUtil";
 
@@ -181,7 +181,6 @@ export const Contacts = () => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" className="p-button-rounded p-button-success mr-2" onClick={() => editContact(rowData)} />
-                <Button icon="pi pi-trash" className="p-button-rounded p-button-warning" onClick={() => confirmDeleteContact(rowData)} />
             </React.Fragment>
         );
     }
@@ -190,12 +189,12 @@ export const Contacts = () => {
     return (
 
         <div>
-            <CreateContact contactDialog = {contactDialog}
-                           hideDialog = { () => setContactDialog(false)}
-                           contacts = {contacts}
-                           selectedContact = {selectedContact}
-                           create = {sendCreateContactRequest} 
-                           update = {sendUpdateContactRequest} />
+            <CreateOrUpdateContact contactDialog = {contactDialog}
+                                   hideDialog = { () => setContactDialog(false)}
+                                   contacts = {contacts}
+                                   selectedContact = {selectedContact}
+                                   create = {sendCreateContactRequest}
+                                   update = {sendUpdateContactRequest} />
 
             <Toast ref={toast}/>
 
@@ -204,7 +203,7 @@ export const Contacts = () => {
             <DataTable className="p-datatable-sm" scrollable
                        value={contacts}
                        editMode="row"
-                       dataKey="email"
+                       dataKey="id"
                        selection={selectedContacts}
                        onSelectionChange={e => setSelectedContacts(e.value)}
                        selectionMode={"multiple"}
