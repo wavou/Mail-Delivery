@@ -8,7 +8,9 @@ import java.util.Optional;
 
 
 @Repository
-public interface ContactRepository extends JpaRepository<Contact, String> {
-     Contact findContactByVerificationCode(String verificationCode);
+public interface ContactRepository extends JpaRepository<Contact, Long> {
 
+     Optional<Contact> findContactByVerificationCode(String verificationCode);
+
+     Optional<Contact> findContactByEmail(String email);
 }

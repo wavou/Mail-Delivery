@@ -4,14 +4,14 @@ import 'primereact/resources/themes/saga-blue/theme.css';
 import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
-import {FileUploadDemo} from "./components/fileUploadDemo";
+import {Contacts} from "./components/Contacts";
 
 const App = () =>  {
 
     return (
         <div>
           <h1>Mail App</h1>
-          <FileUploadDemo/>
+          <Contacts/>
         </div>
     )
 }

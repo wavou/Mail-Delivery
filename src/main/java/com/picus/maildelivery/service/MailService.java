@@ -1,5 +1,6 @@
 package com.picus.maildelivery.service;
 
+import com.picus.maildelivery.constants.LinkStatus;
 import com.picus.maildelivery.dto.MailDTO;
 import com.picus.maildelivery.entity.Contact;
 import com.picus.maildelivery.repository.ContactRepository;
@@ -14,82 +15,83 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.persistence.EntityNotFoundException;
 import java.io.UnsupportedEncodingException;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MailService {
 
+    private static final  String VERIFICATION_LINK = "\n<a href=\"[[URL]]\" target=\"_self\">VERIFY</a>";
+    private static final  String VERIFY_ENDPOINT = "/api/verify?code=";
+
     @Value("${siteUrl}")
     private String siteURL;
+
+    @Value("${mailFromAddress}")
+    private String fromAddress;
+
+    @Value("${mailSenderName}")
+    private String senderName;
 
     private final JavaMailSender mailSender;
     private final ContactRepository contactRepository;
 
-    public boolean verify(String verificationCode) {
-        Contact contact = contactRepository.findContactByVerificationCode(verificationCode);
-        if(contact != null && Boolean.TRUE.equals(contact.getIsClickedLink())){
-            return true;
-        } else if(contact != null && Boolean.FALSE.equals(contact.getIsClickedLink())){
-            contact.setIsClickedLink(true);
-            contact.setClickDateOfLink(LocalDateTime.now());
-            contact.setTimeUntilClick(Duration.between(contact.getClickDateOfLink(), contact.getSentDateOfMail()).toSeconds());
+
+    public String verify(String verificationCode) {
+        Contact contact = contactRepository.findContactByVerificationCode(verificationCode).
+                orElseThrow(EntityNotFoundException::new);
+        if(contact.isClickedLink()){
+            return LinkStatus.ALREADY_CLICKED.getKey();
+        } else {
+            contact.handleClickVerification();
             contactRepository.save(contact);
-            return true;
+            return LinkStatus.SUCCESS.getKey();
         }
-        return false;
     }
 
-    public void sendEmails(MailDTO mailDTO) {
-        mailDTO.getContactEmails().forEach(email -> {
-            //FIXME: is tis right implementation?
-            Contact contact = contactRepository.findById(email).orElseThrow(EntityNotFoundException::new);
-            //FIXME: try-catch is right here?
-            try {
-                sendEmail(mailDTO.getMailBody(), contact);
-
-            } catch (MessagingException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
-        });
+    public void sendEmails(MailDTO mailDTO) throws MessagingException, UnsupportedEncodingException {
+        for(String email: mailDTO.getContactEmails()){
+            Contact contact = contactRepository.findContactByEmail(email).orElseThrow(EntityNotFoundException::new);
+            sendEmail(mailDTO.getMailBody(), contact);
+        }
     }
 
     public void sendEmail(String mailBody, Contact contact)
             throws MessagingException, UnsupportedEncodingException {
-        String fromAddress = "kyavuz@gmail.com";
-        String senderName = "CompanyName";
         String subject = "Campaign";
-        //FIXME : + string
-        String content = mailBody + "\n" + "<a href=\"[[URL]]\" target=\"_self\">VERIFY</a>";
+
+        if(!contact.isEmailSent()){
+            sendEmailToAdress(mailBody, contact.getEmail(),contact.getVerificationCode(), subject);
+            contact.handleMailSent();
+            contactRepository.save(contact);
+            log.info("E mail sent to User: {}", contact);
+        }
+
+    }
+
+    public void sendEmailToAdress(String mailBody, String email, String verificationCode, String subject)
+            throws MessagingException, UnsupportedEncodingException {
 
         MimeMessage message = mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message);
 
-        helper.setFrom(fromAddress, senderName);
-        helper.setTo(contact.getEmail());
+        helper.setFrom("mailAddr", senderName);
+        helper.setTo(email);
         helper.setSubject(subject);
 
-        //FIXME:
-        String verifyURL = siteURL + "/api/verify?code=" + contact.getVerificationCode();
-
-        content = content.replace("[[URL]]", verifyURL);
-
-        helper.setText(content, true);
+        helper.setText(createMailContent(mailBody, verificationCode), true);
 
         mailSender.send(message);
-        contact.setIsEmailSent(true);
-        contact.setSentDateOfMail(LocalDateTime.now());
-        contactRepository.save(contact);
-
-        //TODO: Name could be added to logs.
-        log.info("E mail sent to User: {}", contact);
 
     }
 
+    private String createMailContent(String mailBody, String verificationCode) {
+
+        String content = mailBody + VERIFICATION_LINK;
+        String verifyURL = siteURL + VERIFY_ENDPOINT + verificationCode;
+
+        return content.replace("[[URL]]", verifyURL);
+
+    }
 
 }

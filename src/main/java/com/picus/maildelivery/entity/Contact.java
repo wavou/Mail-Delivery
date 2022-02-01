@@ -3,7 +3,11 @@ package com.picus.maildelivery.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -11,29 +15,45 @@ import java.time.LocalDateTime;
 public class Contact {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private long id;
+
     private String email;
 
     @Column
     private String name;
 
-    //    private Campaign campaign;
+    @Column
+    private boolean isEmailSent;
 
-    @Column(name = "is_email_sent")
-    private Boolean isEmailSent;
+    @Column
+    private boolean isClickedLink;
 
-    @Column(name = "is_clicked_link")
-    private Boolean isClickedLink;
+    @Column
+    private long sentDateOfMail;
 
-    @Column(name = "sent_date_of_mail")
-    private LocalDateTime sentDateOfMail;
+    @Column
+    private long clickDateOfLink;
 
-    @Column(name = "click_date_of_link")
-    private LocalDateTime clickDateOfLink;
-
-    @Column(name = "time_until_click")
-    private Long timeUntilClick;
-
-    @Column(name = "verification_code", length = 64)
+    @Column
     private String verificationCode;
 
+
+    public void createAndSetVerificationCode() {
+        setVerificationCode(UUID.randomUUID().toString());
+    }
+
+    public void  handleClickVerification(){
+        setClickedLink(true);
+        setClickDateOfLink(Instant.now().getEpochSecond());
+    }
+
+    public void handleMailSent() {
+        setEmailSent(true);
+        setSentDateOfMail(Instant.now().getEpochSecond());
+    }
+
+    public long calculateDuration() {
+        return getClickDateOfLink() - getSentDateOfMail();
+    }
 }
